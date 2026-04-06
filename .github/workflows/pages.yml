@@ -32,11 +32,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.33.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
@@ -47,16 +42,37 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Activate pnpm
+        run: corepack prepare pnpm@10.33.0 --activate
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build static site
         run: pnpm build
 
+      - name: Archive Pages artifact
+        run: |
+          tar \
+            --dereference \
+            --hard-dereference \
+            --directory dist \
+            -cvf "$RUNNER_TEMP/artifact.tar" \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=".[^/]*" \
+            .
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          path: browser/dist
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
 
   deploy:
     name: Deploy to GitHub Pages
