@@ -14,6 +14,22 @@ interface AltGrState {
 
 const ALTGR_THRESHOLD_MS = 10;
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (target.isContentEditable) {
+    return true;
+  }
+
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  );
+}
+
 export const Keyboard = () => {
   const os = getOperatingSystem();
   const isKeyboardEnabled = useAtomValue(isKeyboardEnableAtom);
@@ -47,6 +63,9 @@ export const Keyboard = () => {
       // Skip during IME composition
       if (isComposing.current || event.isComposing) return;
 
+      // Do not hijack keystrokes when the user is typing in local input controls.
+      if (isEditableTarget(event.target)) return;
+
       event.preventDefault();
       event.stopPropagation();
 
@@ -79,10 +98,11 @@ export const Keyboard = () => {
 
       if (isComposing.current || event.isComposing) return;
 
+      const code = normalizeKeyCode(event, os);
+      if (isEditableTarget(event.target) && !pressedKeys.current.has(code)) return;
+
       event.preventDefault();
       event.stopPropagation();
-
-      const code = normalizeKeyCode(event, os);
 
       // Handle AltGr state for Windows
       if (altGrState.current?.active) {

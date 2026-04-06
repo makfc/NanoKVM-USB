@@ -11,3 +11,16 @@ export type MediaDevice = {
   audioId?: string;
   audioName?: string;
 };
+
+export type MouseCalibration = {
+  scaleX: number;
+  scaleY: number;
+  offsetX: number;
+  offsetY: number;
+};
+
+export type MouseCalibrationProfile = {
+  id: string;
+  name: string;
+  calibration: MouseCalibration;
+};

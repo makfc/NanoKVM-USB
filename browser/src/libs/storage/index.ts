@@ -1,4 +1,4 @@
-import type { Resolution, Rotation } from '@/types';
+import type { MouseCalibration, MouseCalibrationProfile, Resolution, Rotation } from '@/types';
 
 const LANGUAGE_KEY = 'nanokvm-usb-language';
 const VIDEO_DEVICE_ID_KEY = 'nanokvm-usb-video-device-id';
@@ -11,6 +11,9 @@ const MOUSE_STYLE_KEY = 'nanokvm-usb-mouse-style';
 const MOUSE_MODE_KEY = 'nanokvm-usb-mouse-mode';
 const MOUSE_SCROLL_DIRECTION_KEY = 'nanokvm-usb-mouse-scroll-direction';
 const MOUSE_SCROLL_INTERVAL_KEY = 'nanokvm-usb-mouse-scroll-interval';
+const MOUSE_CALIBRATION_KEY = 'nanokvm-usb-mouse-calibration';
+const MOUSE_CALIBRATION_PROFILES_KEY = 'nanokvm-usb-mouse-calibration-profiles';
+const MOUSE_CALIBRATION_PROFILE_ID_KEY = 'nanokvm-usb-mouse-calibration-profile-id';
 const MOUSE_JIGGLER_MODE_KEY = 'nanokvm-usb-mouse-jiggler-mode';
 const KEYBOARD_SHORTCUT_KEY = 'nanokvm-usb-keyboard-shortcut';
 
@@ -137,6 +140,102 @@ export function getMouseScrollInterval(): number | null {
 
 export function setMouseScrollInterval(interval: number): void {
   localStorage.setItem(MOUSE_SCROLL_INTERVAL_KEY, String(interval));
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function parseMouseCalibration(value: unknown): MouseCalibration | null {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    !isFiniteNumber((value as Partial<MouseCalibration>).scaleX) ||
+    !isFiniteNumber((value as Partial<MouseCalibration>).scaleY) ||
+    !isFiniteNumber((value as Partial<MouseCalibration>).offsetX) ||
+    !isFiniteNumber((value as Partial<MouseCalibration>).offsetY)
+  ) {
+    return null;
+  }
+
+  const calibration = value as MouseCalibration;
+  return {
+    scaleX: calibration.scaleX,
+    scaleY: calibration.scaleY,
+    offsetX: calibration.offsetX,
+    offsetY: calibration.offsetY
+  };
+}
+
+export function getMouseCalibration(): MouseCalibration | null {
+  const value = localStorage.getItem(MOUSE_CALIBRATION_KEY);
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return parseMouseCalibration(window.JSON.parse(value));
+  } catch {
+    return null;
+  }
+}
+
+export function setMouseCalibration(calibration: MouseCalibration): void {
+  localStorage.setItem(MOUSE_CALIBRATION_KEY, window.JSON.stringify(calibration));
+}
+
+export function getMouseCalibrationProfiles(): MouseCalibrationProfile[] | null {
+  const value = localStorage.getItem(MOUSE_CALIBRATION_PROFILES_KEY);
+  if (!value) {
+    return null;
+  }
+
+  try {
+    const profiles = window.JSON.parse(value) as unknown;
+    if (!Array.isArray(profiles)) {
+      return null;
+    }
+
+    const parsedProfiles = profiles
+      .map((profile) => {
+        if (
+          !profile ||
+          typeof profile !== 'object' ||
+          typeof (profile as { id?: unknown }).id !== 'string' ||
+          typeof (profile as { name?: unknown }).name !== 'string'
+        ) {
+          return null;
+        }
+
+        const calibration = parseMouseCalibration((profile as { calibration?: unknown }).calibration);
+        if (!calibration) {
+          return null;
+        }
+
+        return {
+          id: (profile as { id: string }).id,
+          name: (profile as { name: string }).name,
+          calibration
+        };
+      })
+      .filter((profile): profile is MouseCalibrationProfile => profile !== null);
+
+    return parsedProfiles.length > 0 ? parsedProfiles : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setMouseCalibrationProfiles(profiles: MouseCalibrationProfile[]): void {
+  localStorage.setItem(MOUSE_CALIBRATION_PROFILES_KEY, window.JSON.stringify(profiles));
+}
+
+export function getMouseCalibrationProfileId(): string | null {
+  return localStorage.getItem(MOUSE_CALIBRATION_PROFILE_ID_KEY);
+}
+
+export function setMouseCalibrationProfileId(profileId: string): void {
+  localStorage.setItem(MOUSE_CALIBRATION_PROFILE_ID_KEY, profileId);
 }
 
 export function getShortcuts(): string | null {

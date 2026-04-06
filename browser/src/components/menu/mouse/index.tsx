@@ -4,6 +4,12 @@ import { useAtom, useSetAtom } from 'jotai';
 import { MouseIcon } from 'lucide-react';
 
 import {
+  defaultMouseCalibration,
+  defaultMouseCalibrationProfileId,
+  defaultMouseCalibrationProfiles,
+  mouseCalibrationAtom,
+  mouseCalibrationProfileIdAtom,
+  mouseCalibrationProfilesAtom,
   mouseJigglerModeAtom,
   mouseModeAtom,
   mouseStyleAtom,
@@ -13,6 +19,7 @@ import {
 import { mouseJiggler } from '@/libs/mouse-jiggler';
 import * as storage from '@/libs/storage';
 
+import { Calibration } from './calibration.tsx';
 import { Direction } from './direction.tsx';
 import { Jiggler } from './jiggler.tsx';
 import { Mode } from './mode.tsx';
@@ -22,6 +29,9 @@ import { Style } from './style.tsx';
 export const Mouse = () => {
   const [mouseStyle, setMouseStyle] = useAtom(mouseStyleAtom);
   const [mouseMode, setMouseMode] = useAtom(mouseModeAtom);
+  const setMouseCalibration = useSetAtom(mouseCalibrationAtom);
+  const setMouseCalibrationProfileId = useSetAtom(mouseCalibrationProfileIdAtom);
+  const setMouseCalibrationProfiles = useSetAtom(mouseCalibrationProfilesAtom);
   const setScrollDirection = useSetAtom(scrollDirectionAtom);
   const setScrollInterval = useSetAtom(scrollIntervalAtom);
   const setMouseJigglerMode = useSetAtom(mouseJigglerModeAtom);
@@ -53,6 +63,37 @@ export const Mouse = () => {
       setScrollInterval(interval);
     }
 
+    const singleCalibration = storage.getMouseCalibration() || defaultMouseCalibration;
+    const storageProfiles = storage.getMouseCalibrationProfiles();
+    const fallbackProfiles = defaultMouseCalibrationProfiles.map((profile, index) =>
+      index === 0 ? { ...profile, calibration: singleCalibration } : profile
+    );
+    const profiles =
+      storageProfiles && storageProfiles.length > 0
+        ? [
+            ...storageProfiles,
+            ...defaultMouseCalibrationProfiles.filter(
+              (defaultProfile) =>
+                !storageProfiles.some((profile) => profile.id === defaultProfile.id)
+            )
+          ]
+        : fallbackProfiles;
+    setMouseCalibrationProfiles(profiles);
+    storage.setMouseCalibrationProfiles(profiles);
+
+    const storageProfileId = storage.getMouseCalibrationProfileId();
+    const activeProfileId =
+      storageProfileId && profiles.some((profile) => profile.id === storageProfileId)
+        ? storageProfileId
+        : profiles[0]?.id || defaultMouseCalibrationProfileId;
+    setMouseCalibrationProfileId(activeProfileId);
+    storage.setMouseCalibrationProfileId(activeProfileId);
+
+    const activeProfile =
+      profiles.find((profile) => profile.id === activeProfileId) || defaultMouseCalibrationProfiles[0];
+    setMouseCalibration(activeProfile.calibration);
+    storage.setMouseCalibration(activeProfile.calibration);
+
     const jiggler = storage.getMouseJigglerMode();
     mouseJiggler.setMode(jiggler);
     setMouseJigglerMode(jiggler);
@@ -62,6 +103,7 @@ export const Mouse = () => {
     <div className="flex flex-col space-y-0.5">
       <Style />
       <Mode />
+      {mouseMode === 'absolute' ? <Calibration /> : null}
       <Direction />
       <Speed />
 

@@ -58,6 +58,18 @@ const zh_tw = {
       speed: '滾輪速度',
       fast: '快',
       slow: '慢',
+      calibration: {
+        title: '座標校正',
+        profile: '設定檔',
+        namePlaceholder: '新設定檔名稱',
+        saveProfile: '儲存',
+        deleteProfile: '刪除',
+        scaleX: 'X 縮放',
+        scaleY: 'Y 縮放',
+        offsetX: 'X 偏移',
+        offsetY: 'Y 偏移',
+        reset: '重設'
+      },
       requestPointer: '正在使用滑鼠相對模式，請點擊桌面取得滑鼠指標。'
     },
     settings: {

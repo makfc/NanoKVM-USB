@@ -72,6 +72,18 @@ const zh = {
       speed: '滚轮速度',
       fast: '快',
       slow: '慢',
+      calibration: {
+        title: '坐标校准',
+        profile: '配置档',
+        namePlaceholder: '新配置档名称',
+        saveProfile: '保存',
+        deleteProfile: '删除',
+        scaleX: 'X 缩放',
+        scaleY: 'Y 缩放',
+        offsetX: 'X 偏移',
+        offsetY: 'Y 偏移',
+        reset: '重置'
+      },
       requestPointer: '正在使用鼠标相对模式，请点击桌面获取鼠标指针。',
       jiggler: {
         title: '空闲晃动',

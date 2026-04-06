@@ -75,6 +75,18 @@ const en = {
       speed: 'Wheel speed',
       fast: 'Fast',
       slow: 'Slow',
+      calibration: {
+        title: 'Calibration',
+        profile: 'Profile',
+        namePlaceholder: 'New profile name',
+        saveProfile: 'Save',
+        deleteProfile: 'Delete',
+        scaleX: 'Scale X',
+        scaleY: 'Scale Y',
+        offsetX: 'Offset X',
+        offsetY: 'Offset Y',
+        reset: 'Reset'
+      },
       requestPointer: 'Using relative mode. Please click desktop to get mouse pointer.',
       jiggler: {
         title: 'Mouse Jiggler',

@@ -4,14 +4,30 @@ import { useMediaQuery } from 'react-responsive';
 
 import { createInitialTouchState, createTouchHandlers } from '@/components/mouse/touchpad.ts';
 import { MouseAbsoluteEvent } from '@/components/mouse/types.ts';
-import { scrollDirectionAtom, scrollIntervalAtom } from '@/jotai/mouse.ts';
+import { mouseCalibrationAtom, scrollDirectionAtom, scrollIntervalAtom } from '@/jotai/mouse.ts';
 import { device } from '@/libs/device';
 import { MouseAbsoluteRelative } from '@/libs/mouse';
 import { mouseJiggler } from '@/libs/mouse-jiggler';
+import type { MouseCalibration } from '@/types.ts';
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function applyCalibration(x: number, y: number, calibration: MouseCalibration): { x: number; y: number } {
+  const calibratedX = (x - 0.5) * calibration.scaleX + 0.5 + calibration.offsetX;
+  const calibratedY = (y - 0.5) * calibration.scaleY + 0.5 + calibration.offsetY;
+
+  return {
+    x: clamp01(calibratedX),
+    y: clamp01(calibratedY)
+  };
+}
 
 export const Absolute = () => {
   const isBigScreen = useMediaQuery({ minWidth: 650 });
 
+  const mouseCalibration = useAtomValue(mouseCalibrationAtom);
   const scrollDirection = useAtomValue(scrollDirectionAtom);
   const scrollInterval = useAtomValue(scrollIntervalAtom);
 
@@ -97,7 +113,7 @@ export const Absolute = () => {
       if (!screen.videoWidth || !screen.videoHeight) {
         const x = (clientX - rect.left) / rect.width;
         const y = (clientY - rect.top) / rect.height;
-        return { x, y };
+        return applyCalibration(x, y, mouseCalibration);
       }
 
       const videoRatio = screen.videoWidth / screen.videoHeight;
@@ -118,7 +134,7 @@ export const Absolute = () => {
 
       const x = (clientX - rect.left - offsetX) / renderedWidth;
       const y = (clientY - rect.top - offsetY) / renderedHeight;
-      return { x, y };
+      return applyCalibration(x, y, mouseCalibration);
     }
 
     return () => {
@@ -135,7 +151,7 @@ export const Absolute = () => {
 
       touchHandlers.cleanup();
     };
-  }, [isBigScreen, scrollDirection, scrollInterval]);
+  }, [isBigScreen, mouseCalibration, scrollDirection, scrollInterval]);
 
   // Mouse event handler
   async function handleMouseEvent(event: MouseAbsoluteEvent): Promise<void> {
