@@ -1,3 +1,6 @@
+packages:
+  - '.'
+
 overrides:
   minimatch: ^9.0.6
   ajv@<6.14.0: '>=6.14.0'
