@@ -8,6 +8,8 @@
 
 > Finger-sized 4K USB KVM for Server/SBCs
 
+GitHub Pages for this fork: [makfc.github.io/NanoKVM-USB](https://makfc.github.io/NanoKVM-USB/).
+
 ## Introduction
 
 The NanoKVM-USB is a convenient tool for operations and multi-device collaboration. It allows you to perform maintenance tasks without the need for a keyboard, mouse, or monitor. Using just a single computer and no additional software downloads, you can start graphical operations directly through the Chrome browser.
