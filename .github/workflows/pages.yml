@@ -36,8 +36,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: pnpm
-          cache-dependency-path: browser/pnpm-lock.yaml
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
